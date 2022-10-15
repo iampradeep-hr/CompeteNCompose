@@ -1,6 +1,7 @@
 package com.pradeep.taskmanager
 
 
+import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.*
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.dp
 
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @ExperimentalAnimationApi
 @Composable
 fun NotesScreen(
@@ -37,6 +39,18 @@ fun NotesScreen(
 
     val scaffoldState = rememberScaffoldState()
     val showDialog =  remember { mutableStateOf(false) }
+    val list= mutableListOf<Note>()
+    Firebase.db.collection("notes").get().addOnSuccessListener {
+        it.documents.forEach {
+            val note=Note(it.get("title").toString(),it.get("body").toString())
+            list.add(note)
+            list.add(Note("hei","hei"))
+            Toast.makeText(context,it.get("title").toString(),Toast.LENGTH_SHORT).show()
+
+        }
+    }.addOnFailureListener{
+        Toast.makeText(context,"Something went wrong",Toast.LENGTH_SHORT).show()
+    }
 
     if(showDialog.value)
         CustomDialog(value = "", setShowDialog = { showDialog.value = it }, collection = "notes") {
@@ -89,14 +103,26 @@ fun NotesScreen(
 
             }
             Spacer(modifier = Modifier.height(16.dp))
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                
+                item { 
+                    NoteItem(note = Note("Title","Body")) {
+                        
+                    }
+                    NoteItem(note = Note("Test1","Body")) {
 
-              item { 
-                  NoteItem() {
-                      
-                  }
-              }
+                    }
+                    NoteItem(note = Note("Lorem ipsum","orem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")) {
 
+                    }
+                }
+
+                items(list){
+                    it->
+                    NoteItem(note = it) {
+
+                    }
+                }
             }
         }
     }

@@ -24,8 +24,8 @@ import com.pradeep.taskmanager.ui.theme.RedOrange
 
 @Composable
 fun NoteItem(
-    note:Note=Note("title","content"),
-    modifier: Modifier = Modifier,
+    note:Note,
+    modifier: Modifier = Modifier.padding(8.dp),
     cornerRadius: Dp = 10.dp,
     cutCornerSize: Dp = 30.dp,
     onDeleteClick: () -> Unit
@@ -58,7 +58,7 @@ fun NoteItem(
                 .padding(end = 32.dp)
         ) {
             Text(
-                text = "title",
+                text = note.title,
                 style = MaterialTheme.typography.h6,
                 color = MaterialTheme.colors.onSurface,
                 maxLines = 1,
@@ -66,7 +66,7 @@ fun NoteItem(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "content",
+                text =note.content,
                 style = MaterialTheme.typography.body1,
                 color = MaterialTheme.colors.onSurface,
                 maxLines = 10,

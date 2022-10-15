@@ -2,9 +2,7 @@ package com.pradeep.taskmanager
 
 import android.R
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -28,12 +26,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.google.firebase.firestore.FirebaseFirestore
+import java.security.MessageDigest
 
 @Composable
 fun CustomDialog(value: String,collection:String, setShowDialog: (Boolean) -> Unit, setValue: (String) -> Unit) {
 
     val txtFieldError = remember { mutableStateOf("") }
-    val txtField = remember { mutableStateOf(value) }
+    val title = remember { mutableStateOf(value) }
+    val body = remember { mutableStateOf(value) }
+
+    val scrollState= rememberScrollState()
     val context= LocalContext.current
 
     Dialog(onDismissRequest = { setShowDialog(false) }) {
@@ -44,7 +46,9 @@ fun CustomDialog(value: String,collection:String, setShowDialog: (Boolean) -> Un
             Box(
                 contentAlignment = Alignment.Center
             ) {
-                Column(modifier = Modifier.padding(20.dp)) {
+                Column(modifier = Modifier
+                    .padding(20.dp)
+                    .verticalScroll(scrollState)) {
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -52,7 +56,7 @@ fun CustomDialog(value: String,collection:String, setShowDialog: (Boolean) -> Un
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Add",
+                            text = "Add New",
                             style = TextStyle(
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold
@@ -61,7 +65,7 @@ fun CustomDialog(value: String,collection:String, setShowDialog: (Boolean) -> Un
 
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     TextField(
                         modifier = Modifier
@@ -69,7 +73,7 @@ fun CustomDialog(value: String,collection:String, setShowDialog: (Boolean) -> Un
                             .border(
                                 BorderStroke(
                                     width = 2.dp,
-                                    color = colorResource(id = if (txtFieldError.value.isEmpty()) R.color.holo_green_light else R.color.holo_red_dark)
+                                    color = colorResource(id = if (txtFieldError.value.toString().trim().isEmpty()) R.color.holo_green_light else R.color.holo_red_dark)
                                 ),
                                 shape = RoundedCornerShape(20)
                             ),
@@ -78,31 +82,52 @@ fun CustomDialog(value: String,collection:String, setShowDialog: (Boolean) -> Un
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent
                         ),
-
-                        placeholder = { Text(text = "Type here...") },
-                        value = txtField.value,
+                        placeholder = { Text(text = "Title goes here...") },
+                        value = title.value,
                         maxLines = 20,
                         onValueChange = {
-                            txtField.value = it
+                            title.value = it
                         })
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(
+                                BorderStroke(
+                                    width = 2.dp,
+                                    color = colorResource(id = if (txtFieldError.value.trim().isEmpty()) R.color.holo_green_light else R.color.holo_red_dark)
+                                ),
+                                shape = RoundedCornerShape(20)
+                            ),
+                        colors = TextFieldDefaults.textFieldColors(
+                            backgroundColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        placeholder = { Text(text = "Body goes here...") },
+                        value = body.value,
+                        maxLines = 20,
+                        onValueChange = {
+                            body.value = it
+                        })
+
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
                         Button(
                             onClick = {
-                                if (txtField.value.isEmpty()) {
+                                if (title.value.isEmpty()) {
                                     txtFieldError.value = "Field can not be empty"
                                     return@Button
                                 }else{
-                                    Firebase.db.collection(collection).document().set(Note("hello","hello"))
+                                    Firebase.db.collection(collection).document().set(Note(title.value.trim().toString(),body.value.trim().toString()))
                                         .addOnSuccessListener {
                                             Toast.makeText(context,"success", Toast.LENGTH_SHORT).show()
                                         }.addOnFailureListener {
                                             Toast.makeText(context,"failed", Toast.LENGTH_SHORT).show()
                                         }
                                 }
-                                setValue(txtField.value)
+                                setValue(title.value)
                                 setShowDialog(false)
                             },
                             shape = RoundedCornerShape(50.dp),
@@ -113,6 +138,9 @@ fun CustomDialog(value: String,collection:String, setShowDialog: (Boolean) -> Un
                             Text(text = "Save")
                         }
                     }
+                    Spacer(modifier = Modifier.height(10.dp))
+
+
                 }
             }
         }
