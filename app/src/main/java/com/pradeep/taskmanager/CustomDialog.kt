@@ -34,6 +34,7 @@ fun CustomDialog(value: String,collection:String, setShowDialog: (Boolean) -> Un
     val txtFieldError = remember { mutableStateOf("") }
     val title = remember { mutableStateOf(value) }
     val body = remember { mutableStateOf(value) }
+    val progress = remember { mutableStateOf(value) }
 
     val scrollState= rememberScrollState()
     val context= LocalContext.current
@@ -88,6 +89,7 @@ fun CustomDialog(value: String,collection:String, setShowDialog: (Boolean) -> Un
                         onValueChange = {
                             title.value = it
                         })
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     TextField(
                         modifier = Modifier
@@ -113,6 +115,32 @@ fun CustomDialog(value: String,collection:String, setShowDialog: (Boolean) -> Un
 
                     Spacer(modifier = Modifier.height(10.dp))
 
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(
+                                BorderStroke(
+                                    width = 2.dp,
+                                    color = colorResource(id = if (txtFieldError.value.trim().isEmpty()) R.color.holo_green_light else R.color.holo_red_dark)
+                                ),
+                                shape = RoundedCornerShape(20)
+                            ),
+                        colors = TextFieldDefaults.textFieldColors(
+                            backgroundColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        placeholder = { Text(text = "Progress out of 100...") },
+                        value = progress.value,
+                        maxLines = 20,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        onValueChange = {
+                            progress.value = it
+                        })
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+
                     Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
                         Button(
                             onClick = {
@@ -120,12 +148,24 @@ fun CustomDialog(value: String,collection:String, setShowDialog: (Boolean) -> Un
                                     txtFieldError.value = "Field can not be empty"
                                     return@Button
                                 }else{
-                                    Firebase.db.collection(collection).document().set(Note(title.value.trim().toString(),body.value.trim().toString()))
-                                        .addOnSuccessListener {
-                                            Toast.makeText(context,"success", Toast.LENGTH_SHORT).show()
-                                        }.addOnFailureListener {
-                                            Toast.makeText(context,"failed", Toast.LENGTH_SHORT).show()
-                                        }
+                                    if (collection=="notes"){
+                                        Firebase.db.collection(collection).document().set(Note(title.value.trim().toString(),body.value.trim().toString()))
+                                            .addOnSuccessListener {
+                                                Toast.makeText(context,"success", Toast.LENGTH_SHORT).show()
+                                            }.addOnFailureListener {
+                                                Toast.makeText(context,"failed", Toast.LENGTH_SHORT).show()
+                                            }
+                                    }
+                                    if(collection=="tasks"){
+                                        Firebase.db.collection(collection).document().set(Task(title.value.trim().toString(),body.value.trim().toString(),progress.value))
+                                            .addOnSuccessListener {
+                                                Toast.makeText(context,"success", Toast.LENGTH_SHORT).show()
+                                            }.addOnFailureListener {
+                                                Toast.makeText(context,"failed", Toast.LENGTH_SHORT).show()
+                                            }
+                                    }
+
+
                                 }
                                 setValue(title.value)
                                 setShowDialog(false)

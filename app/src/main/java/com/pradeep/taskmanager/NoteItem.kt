@@ -1,6 +1,7 @@
 package com.pradeep.taskmanager
 
 
+import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
@@ -16,6 +17,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -30,6 +32,8 @@ fun NoteItem(
     cutCornerSize: Dp = 30.dp,
     onDeleteClick: () -> Unit
 ) {
+
+    val context= LocalContext.current
     Box(
         modifier = modifier
     ) {
@@ -74,7 +78,22 @@ fun NoteItem(
             )
         }
         IconButton(
-            onClick = onDeleteClick,
+            onClick = {
+                      Firebase.db.collection("notes").whereEqualTo("title",note.title).get().addOnSuccessListener {
+                          it.documents.forEach {
+                              val docID=it.id
+                              Firebase.db.collection("notes").document(docID).delete().addOnSuccessListener {
+                                  Toast.makeText(context,"Deleted",Toast.LENGTH_SHORT).show()
+                              }.addOnFailureListener{
+                              Toast.makeText(context,"Something went wrong!",Toast.LENGTH_SHORT).show()
+                          }
+                          }
+                      }.addOnFailureListener{
+                          Toast.makeText(context,"Something went wrong!",Toast.LENGTH_SHORT).show()
+                      }
+
+
+            },
             modifier = Modifier.align(Alignment.BottomEnd)
         ) {
             Icon(
